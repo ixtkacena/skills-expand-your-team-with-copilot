@@ -1,15 +1,103 @@
 """
-MongoDB database configuration and setup for Mergington High School API
+In-memory database configuration and setup for Mergington High School API
 """
 
-from pymongo import MongoClient
 from argon2 import PasswordHasher
 
-# Connect to MongoDB
-client = MongoClient('mongodb://localhost:27017/')
-db = client['mergington_high']
-activities_collection = db['activities']
-teachers_collection = db['teachers']
+# In-memory storage
+activities_db = {}
+teachers_db = {}
+
+# Simple in-memory collection classes to mimic MongoDB interface
+class InMemoryCollection:
+    def __init__(self, data_store):
+        self.data_store = data_store
+    
+    def find(self, query=None):
+        """Find documents matching query"""
+        if query is None or query == {}:
+            return [{"_id": key, **value} for key, value in self.data_store.items()]
+        
+        results = []
+        for key, value in self.data_store.items():
+            if self._matches_query({"_id": key, **value}, query):
+                results.append({"_id": key, **value})
+        return results
+    
+    def find_one(self, query):
+        """Find single document"""
+        if "_id" in query:
+            key = query["_id"]
+            if key in self.data_store:
+                return {"_id": key, **self.data_store[key]}
+            return None
+        return None
+    
+    def insert_one(self, document):
+        """Insert a document"""
+        doc_id = document["_id"]
+        doc_data = {k: v for k, v in document.items() if k != "_id"}
+        self.data_store[doc_id] = doc_data
+        return True
+    
+    def update_one(self, query, update):
+        """Update a document"""
+        if "_id" in query:
+            key = query["_id"]
+            if key in self.data_store:
+                if "$push" in update:
+                    for field, value in update["$push"].items():
+                        if field not in self.data_store[key]:
+                            self.data_store[key][field] = []
+                        self.data_store[key][field].append(value)
+                if "$pull" in update:
+                    for field, value in update["$pull"].items():
+                        if field in self.data_store[key]:
+                            if value in self.data_store[key][field]:
+                                self.data_store[key][field].remove(value)
+                return type('obj', (object,), {'modified_count': 1})
+        return type('obj', (object,), {'modified_count': 0})
+    
+    def count_documents(self, query):
+        """Count documents"""
+        return len(self.data_store)
+    
+    def aggregate(self, pipeline):
+        """Simple aggregation for getting unique days"""
+        if pipeline and pipeline[0].get("$unwind") == "$schedule_details.days":
+            all_days = set()
+            for activity in self.data_store.values():
+                if "schedule_details" in activity and "days" in activity["schedule_details"]:
+                    all_days.update(activity["schedule_details"]["days"])
+            return [{"_id": day} for day in sorted(all_days)]
+        return []
+    
+    def _matches_query(self, doc, query):
+        """Check if document matches query"""
+        for key, condition in query.items():
+            if key == "schedule_details.days":
+                if "$in" in condition:
+                    doc_days = doc.get("schedule_details", {}).get("days", [])
+                    if not any(day in doc_days for day in condition["$in"]):
+                        return False
+                continue
+            elif key == "schedule_details.start_time":
+                if "$gte" in condition:
+                    doc_time = doc.get("schedule_details", {}).get("start_time", "")
+                    if doc_time < condition["$gte"]:
+                        return False
+                continue
+            elif key == "schedule_details.end_time":
+                if "$lte" in condition:
+                    doc_time = doc.get("schedule_details", {}).get("end_time", "")
+                    if doc_time > condition["$lte"]:
+                        return False
+                continue
+        return True
+
+# Initialize collections
+activities_collection = InMemoryCollection(activities_db)
+teachers_collection = InMemoryCollection(teachers_db)
 
 # Methods
 def hash_password(password):
@@ -163,6 +251,17 @@ initial_activities = {
         },
         "max_participants": 16,
         "participants": ["william@mergington.edu", "jacob@mergington.edu"]
+    },
+    "Manga Maniacs": {
+        "description": "Explore the fantastic stories of the most interesting characters from Japanese Manga (graphic novels).",
+        "schedule": "Tuesdays, 7:00 PM - 8:00 PM",
+        "schedule_details": {
+            "days": ["Tuesday"],
+            "start_time": "19:00",
+            "end_time": "20:00"
+        },
+        "max_participants": 15,
+        "participants": []
     }
 }
 
