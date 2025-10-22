@@ -25,13 +25,47 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeLoginModal = document.querySelector(".close-login-modal");
   const loginMessage = document.getElementById("login-message");
 
+  // Dark mode toggle elements
+  const darkModeToggle = document.getElementById("dark-mode-toggle");
+  const themeIcon = document.querySelector(".theme-icon");
+
   // Activity categories with corresponding colors
   const activityTypes = {
-    sports: { label: "Sports", color: "#e8f5e9", textColor: "#2e7d32" },
-    arts: { label: "Arts", color: "#f3e5f5", textColor: "#7b1fa2" },
-    academic: { label: "Academic", color: "#e3f2fd", textColor: "#1565c0" },
-    community: { label: "Community", color: "#fff3e0", textColor: "#e65100" },
-    technology: { label: "Technology", color: "#e8eaf6", textColor: "#3949ab" },
+    sports: { 
+      label: "Sports", 
+      color: "#e8f5e9", 
+      textColor: "#2e7d32",
+      darkColor: "#1b5e20",
+      darkTextColor: "#a5d6a7"
+    },
+    arts: { 
+      label: "Arts", 
+      color: "#f3e5f5", 
+      textColor: "#7b1fa2",
+      darkColor: "#4a148c",
+      darkTextColor: "#ce93d8"
+    },
+    academic: { 
+      label: "Academic", 
+      color: "#e3f2fd", 
+      textColor: "#1565c0",
+      darkColor: "#0d47a1",
+      darkTextColor: "#90caf9"
+    },
+    community: { 
+      label: "Community", 
+      color: "#fff3e0", 
+      textColor: "#e65100",
+      darkColor: "#bf360c",
+      darkTextColor: "#ffb74d"
+    },
+    technology: { 
+      label: "Technology", 
+      color: "#e8eaf6", 
+      textColor: "#3949ab",
+      darkColor: "#283593",
+      darkTextColor: "#9fa8da"
+    },
   };
 
   // State for activities and filters
@@ -43,6 +77,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Authentication state
   let currentUser = null;
+
+  // Dark mode functionality
+  function initializeTheme() {
+    // Check for saved theme preference or default to light mode
+    const savedTheme = localStorage.getItem("theme") || "light";
+    setTheme(savedTheme);
+  }
+
+  function setTheme(theme) {
+    document.body.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+    
+    // Update the toggle button icon
+    if (theme === "dark") {
+      themeIcon.textContent = "☀️";
+      darkModeToggle.title = "Switch to Light Mode";
+    } else {
+      themeIcon.textContent = "🌙";
+      darkModeToggle.title = "Switch to Dark Mode";
+    }
+    
+    // Refresh the activities to update tag colors
+    if (Object.keys(allActivities).length > 0) {
+      displayFilteredActivities();
+    }
+  }
+
+  function toggleTheme() {
+    const currentTheme = document.body.getAttribute("data-theme") || "light";
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+  }
+
+  // Dark mode toggle event listener
+  darkModeToggle.addEventListener("click", toggleTheme);
 
   // Time range mappings for the dropdown
   const timeRanges = {
@@ -498,13 +567,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // Determine activity type
     const activityType = getActivityType(name, details.description);
     const typeInfo = activityTypes[activityType];
+    
+    // Get the current theme to determine which colors to use
+    const isDarkMode = document.body.getAttribute("data-theme") === "dark";
+    const tagBgColor = isDarkMode ? typeInfo.darkColor : typeInfo.color;
+    const tagTextColor = isDarkMode ? typeInfo.darkTextColor : typeInfo.textColor;
 
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
 
     // Create activity tag
     const tagHtml = `
-      <span class="activity-tag" style="background-color: ${typeInfo.color}; color: ${typeInfo.textColor}">
+      <span class="activity-tag" style="background-color: ${tagBgColor}; color: ${tagTextColor}">
         ${typeInfo.label}
       </span>
     `;
@@ -950,6 +1024,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Initialize app
+  initializeTheme();
   checkAuthentication();
   initializeFilters();
   fetchActivities();
