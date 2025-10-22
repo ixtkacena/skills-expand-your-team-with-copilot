@@ -32,6 +32,40 @@
   --info-light: #d1ecf1;
 }
 
+/* Dark mode color palette */
+body[data-theme="dark"] {
+  /* Primary colors - slightly lighter for better contrast */
+  --primary: #3f51b5;
+  --primary-light: #7c7cc7;
+  --primary-dark: #1a237e;
+  --primary-text: #ffffff;
+
+  /* Secondary colors remain largely the same */
+  --secondary: #ff8f00;
+  --secondary-light: #ffb74d;
+  --secondary-dark: #ff6f00;
+  --secondary-text: #ffffff;
+
+  /* Dark neutral colors */
+  --background: #121212;
+  --surface: #1e1e1e;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --border: #333333;
+  --border-light: #2a2a2a;
+  --border-focus: #555555;
+
+  /* Dark feedback colors */
+  --success: #4caf50;
+  --success-light: #2e2e2e;
+  --warning: #ff9800;
+  --warning-light: #2a2a2a;
+  --error: #f44336;
+  --error-light: #2e2e2e;
+  --info: #2196f3;
+  --info-light: #2a2a2a;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -326,6 +360,12 @@ button {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+/* Dark mode tooltip */
+body[data-theme="dark"] .tooltip .tooltip-text {
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #000;
+}
+
 .tooltip:hover .tooltip-text {
   visibility: visible;
   opacity: 1;
@@ -409,6 +449,11 @@ button {
   z-index: 1000;
   opacity: 0;
   transition: opacity 0.3s ease;
+}
+
+/* Dark mode modal overlay */
+body[data-theme="dark"] .modal {
+  background-color: rgba(0, 0, 0, 0.7);
 }
 
 .modal.show {
@@ -617,6 +662,9 @@ footer {
   position: absolute;
   top: 10px;
   right: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 #user-status {
@@ -650,8 +698,13 @@ footer {
   background-color: rgba(255, 255, 255, 0.3);
 }
 
-.user-icon {
+.user-icon, .theme-icon {
   font-size: 1rem;
+}
+
+#dark-mode-toggle {
+  padding: 4px 8px;
+  min-width: auto;
 }
 
 #logout-button {
