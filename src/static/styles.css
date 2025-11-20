@@ -251,41 +251,127 @@ section h3 {
   padding: 4px 6px;
   cursor: pointer;
   font-size: 0.9rem;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   min-width: 28px;
   height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Pulse animation for drawing attention */
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0);
+  }
+}
+
+/* Bounce animation on hover */
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-8px) scale(1.1);
+  }
+  60% {
+    transform: translateY(-4px) scale(1.05);
+  }
+}
+
+/* Shake animation */
+@keyframes shake {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-10deg);
+  }
+  75% {
+    transform: rotate(10deg);
+  }
+}
+
+/* Shine effect animation */
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Add shine overlay for hover effect */
+.share-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.share-btn:hover::before {
+  left: 100%;
 }
 
 .share-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px) scale(1.15);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  animation: bounce 0.6s ease;
 }
 
+/* Active state - click animation */
+.share-btn:active {
+  transform: scale(0.95) rotate(5deg);
+  transition: transform 0.1s;
+}
+
+/* Individual button hover colors with enhanced animations */
 .facebook-btn:hover {
   background-color: #1877f2;
   border-color: #1877f2;
   color: white;
+  animation: shake 0.5s ease;
 }
 
 .twitter-btn:hover {
   background-color: #1da1f2;
   border-color: #1da1f2;
   color: white;
+  animation: shake 0.5s ease;
 }
 
 .email-btn:hover {
   background-color: #ea4335;
   border-color: #ea4335;
   color: white;
+  animation: shake 0.5s ease;
 }
 
 .copy-btn:hover {
   background-color: var(--success);
   border-color: var(--success);
   color: white;
+  animation: shake 0.5s ease;
+}
+
+/* Add a subtle pulse animation to all share buttons to draw attention */
+.share-btn {
+  animation: pulse 3s infinite;
 }
 
 /* Activity Tag */
